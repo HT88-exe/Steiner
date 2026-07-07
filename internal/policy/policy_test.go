@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/brueing/steiner/internal/config"
-	"github.com/brueing/steiner/internal/detect"
+	"github.com/HT88-exe/steiner/internal/config"
+	"github.com/HT88-exe/steiner/internal/detect"
 )
 
 func boolp(b bool) *bool { return &b }

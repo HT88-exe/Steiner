@@ -10,7 +10,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/brueing/steiner/internal/config"
+	"github.com/HT88-exe/steiner/internal/config"
 )
 
 // Signals is the result of scanning outbound arguments.

@@ -14,14 +14,14 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/brueing/steiner/internal/admin"
-	"github.com/brueing/steiner/internal/audit"
-	"github.com/brueing/steiner/internal/auth"
-	"github.com/brueing/steiner/internal/config"
-	"github.com/brueing/steiner/internal/gateway"
-	"github.com/brueing/steiner/internal/policytest"
-	"github.com/brueing/steiner/internal/upstream"
-	"github.com/brueing/steiner/internal/version"
+	"github.com/HT88-exe/steiner/internal/admin"
+	"github.com/HT88-exe/steiner/internal/audit"
+	"github.com/HT88-exe/steiner/internal/auth"
+	"github.com/HT88-exe/steiner/internal/config"
+	"github.com/HT88-exe/steiner/internal/gateway"
+	"github.com/HT88-exe/steiner/internal/policytest"
+	"github.com/HT88-exe/steiner/internal/upstream"
+	"github.com/HT88-exe/steiner/internal/version"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 

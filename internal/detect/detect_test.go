@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/brueing/steiner/internal/config"
+	"github.com/HT88-exe/steiner/internal/config"
 )
 
 func TestBase64Blob(t *testing.T) {

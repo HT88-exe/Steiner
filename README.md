@@ -76,7 +76,7 @@ leave.
 ## Quickstart
 
 ```bash
-go install github.com/brueing/steiner/cmd/steiner@latest
+go install github.com/HT88-exe/steiner/cmd/steiner@latest
 
 steiner init                      # writes an annotated steiner.yaml
 steiner keygen --name agent-a     # prints an API key (shown once)

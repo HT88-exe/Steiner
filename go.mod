@@ -1,4 +1,4 @@
-module github.com/brueing/steiner
+module github.com/HT88-exe/steiner
 
 go 1.26.4
 

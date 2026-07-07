@@ -12,8 +12,8 @@ import (
 	"os/exec"
 	"sync"
 
-	"github.com/brueing/steiner/internal/config"
-	"github.com/brueing/steiner/internal/version"
+	"github.com/HT88-exe/steiner/internal/config"
+	"github.com/HT88-exe/steiner/internal/version"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 

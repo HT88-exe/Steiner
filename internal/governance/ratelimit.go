@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/brueing/steiner/internal/config"
+	"github.com/HT88-exe/steiner/internal/config"
 )
 
 // Limiter enforces fixed-window per-minute and per-day limits. Fixed windows

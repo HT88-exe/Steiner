@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/brueing/steiner/internal/auth"
+	"github.com/HT88-exe/steiner/internal/auth"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 

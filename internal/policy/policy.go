@@ -10,10 +10,10 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/brueing/steiner/internal/config"
-	"github.com/brueing/steiner/internal/detect"
-	"github.com/brueing/steiner/internal/dlp"
-	"github.com/brueing/steiner/internal/governance"
+	"github.com/HT88-exe/steiner/internal/config"
+	"github.com/HT88-exe/steiner/internal/detect"
+	"github.com/HT88-exe/steiner/internal/dlp"
+	"github.com/HT88-exe/steiner/internal/governance"
 )
 
 // Verdict is the engine's decision for one call.

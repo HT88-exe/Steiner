@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brueing/steiner/internal/audit"
-	"github.com/brueing/steiner/internal/policy"
+	"github.com/HT88-exe/steiner/internal/audit"
+	"github.com/HT88-exe/steiner/internal/policy"
 )
 
 //go:embed trace.html

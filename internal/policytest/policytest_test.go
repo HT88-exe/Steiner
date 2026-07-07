@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/brueing/steiner/internal/config"
+	"github.com/HT88-exe/steiner/internal/config"
 )
 
 func testCfg(t *testing.T) *config.Config {

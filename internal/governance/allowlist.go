@@ -3,7 +3,7 @@ package governance
 import (
 	"path"
 
-	"github.com/brueing/steiner/internal/config"
+	"github.com/HT88-exe/steiner/internal/config"
 )
 
 // ToolAllowed reports whether the principal may use the namespaced tool.

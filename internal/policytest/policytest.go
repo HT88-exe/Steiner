@@ -8,9 +8,9 @@ import (
 	"io"
 	"os"
 
-	"github.com/brueing/steiner/internal/config"
-	"github.com/brueing/steiner/internal/detect"
-	"github.com/brueing/steiner/internal/policy"
+	"github.com/HT88-exe/steiner/internal/config"
+	"github.com/HT88-exe/steiner/internal/detect"
+	"github.com/HT88-exe/steiner/internal/policy"
 	"gopkg.in/yaml.v3"
 )
 

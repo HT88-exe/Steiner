@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brueing/steiner/internal/dlp"
+	"github.com/HT88-exe/steiner/internal/dlp"
 	_ "modernc.org/sqlite"
 )
 

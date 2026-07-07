@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/brueing/steiner/internal/audit"
-	"github.com/brueing/steiner/internal/config"
-	"github.com/brueing/steiner/internal/upstream"
+	"github.com/HT88-exe/steiner/internal/audit"
+	"github.com/HT88-exe/steiner/internal/config"
+	"github.com/HT88-exe/steiner/internal/upstream"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
