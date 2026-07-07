@@ -1,0 +1,20 @@
+# Binaries
+/bin/
+/dist/
+*.exe
+*.test
+
+# Runtime state (never commit)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+steiner.keys.yaml
+
+# Coverage and profiles
+*.out
+*.prof
+
+# Editor/OS noise
+.DS_Store
+Thumbs.db

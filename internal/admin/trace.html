@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Steiner — Trace Viewer</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e;
+    --green: #3fb950; --red: #f85149; --amber: #d29922; --blue: #58a6ff;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 14px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; }
+  header { display: flex; align-items: center; gap: 16px; padding: 14px 20px;
+           border-bottom: 1px solid var(--border); background: var(--panel);
+           position: sticky; top: 0; }
+  header h1 { font-size: 15px; margin: 0; font-weight: 600; letter-spacing: .04em; }
+  header h1 span { color: var(--blue); }
+  .filters { display: flex; gap: 8px; margin-left: auto; }
+  .filters input, .filters select {
+    background: var(--bg); color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; padding: 4px 8px; font: inherit; font-size: 12px; }
+  main { padding: 16px 20px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; color: var(--dim); font-weight: 500; font-size: 11px;
+       text-transform: uppercase; letter-spacing: .08em; padding: 6px 10px;
+       border-bottom: 1px solid var(--border); }
+  td { padding: 6px 10px; border-bottom: 1px solid #21262d; vertical-align: top;
+       font-size: 12.5px; }
+  tr:hover td { background: #161b22; }
+  .pill { display: inline-block; padding: 1px 8px; border-radius: 10px;
+          font-size: 11px; border: 1px solid; }
+  .allowed { color: var(--green); border-color: var(--green); }
+  .denied  { color: var(--red); border-color: var(--red); }
+  .other   { color: var(--amber); border-color: var(--amber); }
+  .taint { color: var(--red); font-size: 11px; }
+  .args { color: var(--dim); max-width: 480px; overflow: hidden;
+          text-overflow: ellipsis; white-space: nowrap; }
+  .flags { color: var(--amber); font-size: 11px; }
+  .empty { color: var(--dim); padding: 40px; text-align: center; }
+  .ts { color: var(--dim); white-space: nowrap; }
+</style>
+</head>
+<body>
+<header>
+  <h1><span>steiner</span> trace viewer</h1>
+  <div class="filters">
+    <input id="f-principal" placeholder="principal" size="12">
+    <select id="f-decision">
+      <option value="">all decisions</option>
+      <option value="allowed">allowed</option>
+      <option value="denied_tainted_sink">denied: tainted sink</option>
+      <option value="denied_dlp">denied: dlp</option>
+      <option value="denied_allowlist">denied: allowlist</option>
+      <option value="denied_approval">denied: approval</option>
+      <option value="denied_rate_minute">denied: rate/min</option>
+      <option value="denied_rate_day">denied: rate/day</option>
+      <option value="upstream_error">upstream error</option>
+    </select>
+    <input id="f-key" placeholder="admin key (if set)" size="16" type="password">
+  </div>
+</header>
+<main>
+  <table>
+    <thead>
+      <tr><th>time</th><th>session</th><th>principal</th><th>call</th>
+          <th>decision</th><th>args / reason</th><th>flags</th><th>ms</th></tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div id="empty" class="empty" hidden>no events yet — point an agent at the gateway</div>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  function pillClass(d) {
+    if (d === "allowed" || d === "session_start") return "allowed";
+    if (d.startsWith("denied")) return "denied";
+    return "other";
+  }
+  function esc(s) {
+    return (s || "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  }
+  async function refresh() {
+    const params = new URLSearchParams({ limit: "200" });
+    if ($("f-principal").value) params.set("principal", $("f-principal").value);
+    if ($("f-decision").value) params.set("decision", $("f-decision").value);
+    const headers = {};
+    if ($("f-key").value) headers["Authorization"] = "Bearer " + $("f-key").value;
+    try {
+      const res = await fetch("/api/events?" + params, { headers });
+      if (!res.ok) return;
+      const events = await res.json();
+      $("empty").hidden = events.length > 0;
+      $("rows").innerHTML = events.map(e => `
+        <tr>
+          <td class="ts">${esc((e.time || "").replace("T", " ").slice(0, 19))}</td>
+          <td class="ts">${esc(e.session_key)}${e.tainted ? ' <span class="taint">●tainted</span>' : ""}</td>
+          <td>${esc(e.principal)}</td>
+          <td>${esc(e.tool || e.method)}</td>
+          <td><span class="pill ${pillClass(e.decision)}">${esc(e.decision)}</span></td>
+          <td class="args" title="${esc(e.args)}">${esc(e.reason || e.args)}</td>
+          <td class="flags">${esc((e.flags || []).join(" "))}</td>
+          <td class="ts">${e.latency_ms ?? ""}</td>
+        </tr>`).join("");
+    } catch (err) { /* gateway restarting; retry on next tick */ }
+  }
+  refresh();
+  setInterval(refresh, 2000);
+  for (const id of ["f-principal", "f-decision", "f-key"]) $(id).addEventListener("change", refresh);
+</script>
+</body>
+</html>
