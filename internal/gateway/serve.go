@@ -104,7 +104,7 @@ func mcpHeadersMiddleware(next http.Handler) http.Handler {
 
 // ServeHTTP runs the MCP ingress and admin servers until ctx is canceled.
 func (g *Gateway) ServeHTTP(ctx context.Context, verifier *auth.Verifier, admin http.Handler) error {
-	if err := requireLoopback(g.Cfg.AdminListen); err != nil {
+	if err := RequireLoopback(g.Cfg.AdminListen); err != nil {
 		return err
 	}
 
@@ -139,7 +139,8 @@ func (g *Gateway) ServeHTTP(ctx context.Context, verifier *auth.Verifier, admin 
 	}
 }
 
-func requireLoopback(addr string) error {
+// RequireLoopback ensures the admin API only binds to loopback addresses.
+func RequireLoopback(addr string) error {
 	host, _, err := net.SplitHostPort(addr)
 	if err != nil {
 		return fmt.Errorf("admin_listen %q: %w", addr, err)

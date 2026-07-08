@@ -141,6 +141,7 @@ policy:
 | `steiner run [--stdio] [--verbose]` | Run the gateway. |
 | `steiner keygen --name <principal>` | Issue an API key. |
 | `steiner audit [--json]` | Query the audit log. |
+| `steiner trace [--config path]` | Serve the trace viewer (reads audit DB from disk). |
 | `steiner approvals list \| approve <id> \| deny <id>` | Resolve pending approvals. |
 | `steiner policy test <file>` | Run attack-scenario fixtures. |
 | `steiner version` | Print version. |

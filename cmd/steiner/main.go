@@ -21,6 +21,7 @@ import (
 	"github.com/HT88-exe/steiner/internal/auth"
 	"github.com/HT88-exe/steiner/internal/config"
 	"github.com/HT88-exe/steiner/internal/gateway"
+	"github.com/HT88-exe/steiner/internal/policy"
 	"github.com/HT88-exe/steiner/internal/policytest"
 	"github.com/HT88-exe/steiner/internal/upstream"
 	"github.com/HT88-exe/steiner/internal/version"
@@ -38,6 +39,8 @@ Usage:
   steiner keygen --name <principal> issue an API key for a principal
   steiner audit [flags]             query the audit log
       --principal, --decision, --tool, --limit, --json
+  steiner trace [flags]             open the trace viewer (reads audit log from disk)
+      --config <path>                 config file (default steiner.yaml)
   steiner approvals list            list pending approvals
   steiner approvals approve <id>    approve a pending call
   steiner approvals deny <id>       deny a pending call
@@ -60,6 +63,8 @@ func main() {
 		err = cmdKeygen(os.Args[2:])
 	case "audit":
 		err = cmdAudit(os.Args[2:])
+	case "trace":
+		err = cmdTrace(os.Args[2:])
 	case "approvals":
 		err = cmdApprovals(os.Args[2:])
 	case "policy":
@@ -118,6 +123,14 @@ func cmdRun(args []string) error {
 	}
 	defer auditLog.Close()
 
+	// Admin queries use a separate read-only handle so the trace viewer
+	// stays responsive while the gateway is writing audit events.
+	auditRead, err := audit.OpenReadOnly(cfg.ResolvePath(cfg.AuditDB))
+	if err != nil {
+		return err
+	}
+	defer auditRead.Close()
+
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
@@ -129,7 +142,7 @@ func cmdRun(args []string) error {
 
 	gw := gateway.New(cfg, ups, auditLog, logger)
 
-	adminSrv := &admin.Server{Audit: auditLog, Broker: gw.Broker, Key: cfg.AdminKey}
+	adminSrv := &admin.Server{Audit: auditRead, Broker: gw.Broker, Key: cfg.AdminKey}
 
 	if *stdio {
 		principal, err := gw.PrincipalFor(cfg.DefaultPrincipal)
@@ -196,7 +209,7 @@ func cmdAudit(args []string) error {
 	if err != nil {
 		return err
 	}
-	log, err := audit.Open(cfg.ResolvePath(cfg.AuditDB))
+	log, err := audit.OpenReadOnly(cfg.ResolvePath(cfg.AuditDB))
 	if err != nil {
 		return err
 	}
@@ -233,6 +246,53 @@ func cmdAudit(args []string) error {
 		fmt.Printf("%s  %-18s %-10s %-28s %-22s %s%s\n",
 			e.Time.Format(time.RFC3339), e.SessionKey, e.Principal,
 			firstN(e.Tool, 28), e.Decision, firstN(detail, 80), taint)
+	}
+	return nil
+}
+
+func cmdTrace(args []string) error {
+	fs := flag.NewFlagSet("trace", flag.ExitOnError)
+	cfgPath := fs.String("config", "steiner.yaml", "config file")
+	listen := fs.String("listen", "", "listen address (default: admin_listen from config)")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	cfg, err := config.Load(*cfgPath)
+	if err != nil {
+		return err
+	}
+	addr := cfg.AdminListen
+	if *listen != "" {
+		addr = *listen
+	}
+	if err := gateway.RequireLoopback(addr); err != nil {
+		return err
+	}
+
+	auditPath := cfg.ResolvePath(cfg.AuditDB)
+	log, err := audit.OpenReadOnly(auditPath)
+	if err != nil {
+		return fmt.Errorf("opening audit log %q: %w (has the gateway recorded any events yet?)", auditPath, err)
+	}
+	defer log.Close()
+
+	srv := &admin.Server{Audit: log, Broker: policy.NewBroker(""), Key: cfg.AdminKey}
+	httpSrv := &http.Server{Addr: addr, Handler: srv.Handler()}
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+	go func() {
+		<-ctx.Done()
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+		_ = httpSrv.Shutdown(shutdownCtx)
+	}()
+
+	fmt.Printf("Trace viewer: http://%s/\n", addr)
+	fmt.Printf("Audit log:    %s\n", auditPath)
+	fmt.Println("Press Ctrl+C to stop.")
+	if err := httpSrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		return err
 	}
 	return nil
 }

@@ -138,13 +138,13 @@ func TestMcpHeadersMiddleware(t *testing.T) {
 }
 
 func TestRequireLoopback(t *testing.T) {
-	if err := requireLoopback("127.0.0.1:8386"); err != nil {
+	if err := RequireLoopback("127.0.0.1:8386"); err != nil {
 		t.Fatal(err)
 	}
-	if err := requireLoopback("localhost:8386"); err != nil {
+	if err := RequireLoopback("localhost:8386"); err != nil {
 		t.Fatal(err)
 	}
-	if err := requireLoopback("0.0.0.0:8386"); err == nil {
+	if err := RequireLoopback("0.0.0.0:8386"); err == nil {
 		t.Fatal("0.0.0.0 must be rejected for the admin API")
 	}
 }

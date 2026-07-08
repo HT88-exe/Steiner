@@ -82,6 +82,19 @@ func Open(path string) (*Log, error) {
 	return &Log{db: db}, nil
 }
 
+// OpenReadOnly opens an existing audit database for queries only. Use this for
+// `steiner trace` so the viewer can run alongside a live gateway without
+// fighting over the same SQLite connection.
+func OpenReadOnly(path string) (*Log, error) {
+	dsn := fmt.Sprintf("file:%s?mode=ro&_pragma=query_only(1)&_pragma=busy_timeout(5000)", filepath.ToSlash(path))
+	db, err := sql.Open("sqlite", dsn)
+	if err != nil {
+		return nil, err
+	}
+	db.SetMaxOpenConns(4)
+	return &Log{db: db}, nil
+}
+
 // Close closes the database.
 func (l *Log) Close() error { return l.db.Close() }
 
