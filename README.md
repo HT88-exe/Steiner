@@ -174,7 +174,6 @@ MCP protocol sessions (see [docs/spec-compat.md](docs/spec-compat.md)).
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Development setup |
 | [SECURITY.md](SECURITY.md) | Vulnerability reporting |
 | [docs/spec-compat.md](docs/spec-compat.md) | MCP spec compatibility |
-| [docs/launch.md](docs/launch.md) | Release and launch checklist |
 
 ## Current limitations (v0.1.0)
 
