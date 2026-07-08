@@ -1,4 +1,6 @@
 // Command steiner is the Steiner MCP security gateway CLI.
+// If you are looking for the gateway itself, run `steiner run`.
+// Btw if ur wondering why its called steiner is cause of steins;gate lmao get it cause its a gateway and steins;gate is a gateway and steiner is a gateway and its a pun on steins;gate and steiner is a german name and stein means stone in german and stones are hard and gateways are hard to make and i am tired of writing this comment so im just gonna stop now bye
 package main
 
 import (
@@ -102,7 +104,7 @@ func cmdRun(args []string) error {
 	if *verbose {
 		level = slog.LevelDebug
 	}
-	// Logs always go to stderr: in --stdio mode stdout carries the protocol.
+	// Logs always go to stderr: in --stdio mode stdout carries the protocol
 	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: level}))
 
 	cfg, err := config.Load(*cfgPath)

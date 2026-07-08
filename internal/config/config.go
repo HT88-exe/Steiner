@@ -28,8 +28,8 @@ type Config struct {
 	AuditDB string `yaml:"audit_db"`
 	// Instructions is advertised to connecting MCP clients.
 	Instructions string `yaml:"instructions"`
-	// DefaultPrincipal names the principal used for stdio ingress, where
-	// there is no HTTP authentication. Defaults to "local".
+	// DefaultPrincipal names the principal used for stdio ingress, where there is no HTTP authentication. 
+	// Defaults to "local".
 	DefaultPrincipal string `yaml:"default_principal"`
 	// SessionTimeoutMinutes closes idle downstream sessions. Default 30.
 	SessionTimeoutMinutes int `yaml:"session_timeout_minutes"`
@@ -44,15 +44,14 @@ type Config struct {
 
 	Notifications Notifications `yaml:"notifications"`
 
-	// dir is the directory containing the config file, used to resolve
-	// relative paths.
+	// dir is the directory containing the config file, used to resolve relative paths.
 	dir string
 }
 
 // Upstream declares one upstream MCP server.
 type Upstream struct {
-	// Name namespaces the upstream's tools ("<name>_<tool>"). It must match
-	// ^[a-z0-9][a-z0-9-]*$ so namespaced tool names remain spec-valid.
+	// Name namespaces the upstream's tools ("<name>_<tool>").
+	// It must match ^[a-z0-9][a-z0-9-]*$ so namespaced tool names remain spec-valid
 	Name string `yaml:"name"`
 	// Transport is "stdio" or "http".
 	Transport string `yaml:"transport"`
@@ -62,8 +61,8 @@ type Upstream struct {
 	Args    []string          `yaml:"args"`
 	Env     map[string]string `yaml:"env"`
 
-	// HTTP transport fields. Headers lets the gateway hold upstream
-	// credentials so agents never see them.
+	// HTTP transport fields. 
+	// Headers lets the gateway hold upstream credentials so agents never see them.
 	URL     string            `yaml:"url"`
 	Headers map[string]string `yaml:"headers"`
 }

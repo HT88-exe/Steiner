@@ -1,8 +1,6 @@
 // Package auth implements API-key authentication for the HTTP ingress.
-//
-// Keys are random bearer tokens of the form "sk-steiner-<hex>". Only their
-// SHA-256 digests are stored, in a YAML keys file managed by
-// `steiner keygen`.
+// Keys are random bearer tokens of the form "sk-steiner-<hex>". 
+// Only their SHA-256 digests are stored, in a YAML keys file managed by `steiner keygen`.
 package auth
 
 import (
@@ -32,8 +30,8 @@ type Key struct {
 	SHA256 string `yaml:"sha256"`
 }
 
-// Generate creates a new token for the principal and appends its digest to
-// the keys file. The plaintext token is returned exactly once.
+// Generate creates a new token for the principal and appends its digest to the keys file.
+// The plaintext token is returned exactly once.
 func Generate(keysPath, principal string) (string, error) {
 	raw := make([]byte, 24)
 	if _, err := rand.Read(raw); err != nil {
@@ -69,13 +67,12 @@ func loadKeys(path string) (KeysFile, error) {
 	return kf, nil
 }
 
-// Verifier authenticates bearer tokens against the keys file.
+// Verifier authenticates bearer tokens against the keys file
 type Verifier struct {
 	keys []Key
 }
 
-// NewVerifier loads the keys file. A missing file yields a verifier that
-// rejects everything (HTTP ingress requires keys; stdio ingress does not).
+// NewVerifier loads the keys file. A missing file yields a verifier that rejects everything (HTTP ingress requires keys; stdio ingress does not).
 func NewVerifier(keysPath string) (*Verifier, error) {
 	kf, err := loadKeys(keysPath)
 	if err != nil && !os.IsNotExist(err) {
@@ -120,7 +117,7 @@ func WithPrincipal(ctx context.Context, principal string) context.Context {
 	return context.WithValue(ctx, ctxKey{}, principal)
 }
 
-// PrincipalFrom extracts the authenticated principal name, if any.
+// PrincipalFrom extracts the authenticated principal name, if there even is one lmao.
 func PrincipalFrom(ctx context.Context) (string, bool) {
 	p, ok := ctx.Value(ctxKey{}).(string)
 	return p, ok
