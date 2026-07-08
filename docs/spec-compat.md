@@ -34,7 +34,7 @@ decisions from headers alone.
   session key and uses it both as the HTTP `Mcp-Session-Id` (while that still
   exists) and as the audit correlation key. Taint state and session-ownership
   checks hang off this key, never off protocol session state. When the
-  protocol drops sessions, our taint model is unaffected.
+  protocol drops sessions, Steiner's taint model is unaffected.
 - **We already validate SEP-2243 headers.** `mcpHeadersMiddleware` in
   [internal/gateway/serve.go](../internal/gateway/serve.go) cross-checks
   `Mcp-Method` / `Mcp-Name` against the body when a client sends them, and

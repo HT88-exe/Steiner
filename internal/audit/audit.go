@@ -1,5 +1,5 @@
 // Package audit implements Steiner's append-only audit log.
-// Every decision the gateway makes; allowed or denied, tool call, resource read, or prompt get, is recorded as one row. 
+// Every decision the gateway makes; allowed or denied, tool call, resource read, or prompt get, is recorded as one row.
 // The log is written by the gateway and read by `steiner audit` and the admin trace viewer.
 // There is no update or delete path.
 package audit
@@ -85,7 +85,7 @@ func Open(path string) (*Log, error) {
 // Close closes the database.
 func (l *Log) Close() error { return l.db.Close() }
 
-// Record appends one event. 
+// Record appends one event.
 // Args are redacted before storage so secrets never persist in the audit trail.
 func (l *Log) Record(e *Event) error {
 	if e.Time.IsZero() {

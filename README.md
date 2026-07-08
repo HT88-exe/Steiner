@@ -1,15 +1,20 @@
 # Steiner
 
+[![CI](https://github.com/HT88-exe/steiner/actions/workflows/ci.yml/badge.svg)](https://github.com/HT88-exe/steiner/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![Go](https://img.shields.io/badge/Go-1.26+-00ADD8?logo=go&logoColor=white)](https://go.dev/)
+
 **A security gateway for MCP (Model Context Protocol).** Steiner sits between
 your agents and the MCP servers they use, and enforces policy on every tool
-call: who may call what, a full audit trail, and — the part that matters —
-**containment**.
+call: who may call what, a full audit trail, and containment when injection
+succeeds.
 
-Prompt-injection detection is probabilistic; no classifier catches
-everything, and attackers iterate. Steiner takes the other side of the bet:
-**assume the model gets injected, and make it non-catastrophic.** It does that
-at the one place with full visibility into what an agent actually *does* — the
-tool-call layer.
+Repository: [github.com/HT88-exe/steiner](https://github.com/HT88-exe/steiner)
+
+Prompt-injection detection is probabilistic; no classifier catches everything.
+Steiner takes the other side of the bet: **assume the model gets injected, and
+make it non-catastrophic** at the tool-call layer — the one place with full
+visibility into what an agent actually does.
 
 ```mermaid
 flowchart LR
@@ -38,7 +43,7 @@ flowchart LR
   pol --> aud
 ```
 
-## The core idea: the lethal trifecta
+## The lethal trifecta
 
 An agent is dangerous when three things are true at once:
 
@@ -47,50 +52,44 @@ An agent is dangerous when three things are true at once:
 3. it can **communicate externally** (send mail, post, call a webhook).
 
 An injection payload hidden in untrusted content can turn steps 2 and 3 into
-data exfiltration. You cannot reliably stop the model from *being* injected —
-but a gateway in the data path can stop the *consequence*. Steiner tracks when
-a session has read untrusted content (it becomes **tainted**) and
-deterministically blocks tainted sessions from reaching tools with external
-side effects. The model can be fully compromised and the secrets still do not
-leave.
+data exfiltration. You cannot reliably stop the model from being injected — but
+a gateway in the data path can stop the consequence. Steiner tracks when a
+session has read untrusted content (it becomes **tainted**) and blocks tainted
+sessions from reaching tools with external side effects.
 
-## What you get
+## Features
 
-- **Transparent proxy.** Agents connect to Steiner as a single MCP server; it
-  aggregates any number of upstream servers and namespaces their tools as
-  `<upstream>_<tool>`. Existing clients work unchanged.
-- **Governance.** Per-principal API keys, tool allow/deny lists, and
-  rate/budget limits.
-- **Containment (the differentiator).** Session taint tracking, the trifecta
-  rule, built-in DLP on outbound arguments, custom argument rules, and
-  human-in-the-loop approval for sensitive tools.
-- **Detection, as signal not gospel.** Heuristics (exfil-encoding blobs, novel
-  domains, injection phrasing) feed the policy engine rather than making
-  promises they can't keep.
-- **Audit-first.** Every decision — allowed or denied — is one append-only row
-  with secrets redacted. Query it from the CLI, export JSONL to your SIEM, or
-  watch it live in the built-in trace viewer.
-- **Credential vaulting.** Upstream credentials live in Steiner's config;
-  agents authenticate to Steiner and never see the real tokens.
+- **Transparent proxy** — one MCP endpoint; upstream tools exposed as
+  `<upstream>_<tool>`.
+- **Governance** — per-principal API keys, allow/deny lists, rate limits.
+- **Containment** — session taint tracking, the trifecta rule, DLP on outbound
+  arguments, custom rules, and approval for sensitive tools.
+- **Detection as signal** — heuristics (encoding blobs, novel domains,
+  injection phrasing) feed the policy engine; they do not replace it.
+- **Audit trail** — append-only log with secret redaction, CLI queries, JSONL
+  export, and a loopback trace viewer.
+- **Credential vaulting** — upstream tokens live in Steiner config; agents never
+  see them.
 
 ## Quickstart
 
+Requires [Go 1.26+](https://go.dev/dl/) or install the binary:
+
 ```bash
 go install github.com/HT88-exe/steiner/cmd/steiner@latest
+```
 
-steiner init                      # writes an annotated steiner.yaml
+```bash
+steiner init                      # writes steiner.yaml
 steiner keygen --name agent-a     # prints an API key (shown once)
-steiner run                       # serves MCP at http://127.0.0.1:8385/mcp
+steiner run                       # MCP at http://127.0.0.1:8385/mcp
 ```
 
 Point an agent at `http://127.0.0.1:8385/mcp` with header
-`Authorization: Bearer <key>`, and open `http://127.0.0.1:8386/` for the live
-trace viewer.
+`Authorization: Bearer <key>`. Open `http://127.0.0.1:8386/` for the trace
+viewer.
 
-### Connecting Cursor / Claude Desktop
-
-Steiner can also run over stdio, which is how desktop clients launch local MCP
-servers. In your client's MCP config:
+### Cursor / Claude Desktop (stdio)
 
 ```json
 {
@@ -103,27 +102,22 @@ servers. In your client's MCP config:
 }
 ```
 
-Over stdio there is no HTTP auth, so calls use the `default_principal`
-(`local`). The admin API and trace viewer still run on the loopback port.
+Stdio mode uses the `default_principal` (`local`). The admin API still listens on
+the loopback port.
 
 ## Configuration
 
-`steiner init` writes a commented starter config. The shape:
+`steiner init` writes a commented starter config:
 
 ```yaml
 listen: 127.0.0.1:8385
-admin_listen: 127.0.0.1:8386        # loopback only, enforced
+admin_listen: 127.0.0.1:8386
 
 upstreams:
   - name: fs
     transport: stdio
     command: npx
     args: ["-y", "@modelcontextprotocol/server-filesystem", "."]
-  - name: linear
-    transport: http
-    url: https://mcp.linear.app/mcp
-    headers:                         # vaulted: agents never see these
-      Authorization: "Bearer ..."
 
 principals:
   - name: agent-a
@@ -134,8 +128,8 @@ principals:
 policy:
   untrusted_sources: ["web_*", "fetch_*", "browser_*"]
   external_sinks:    ["mail_*", "slack_*", "*_send", "*_post"]
-  block_sinks_when_tainted: true     # the trifecta rule
-  block_secrets_in_args: true        # built-in DLP
+  block_sinks_when_tainted: true
+  block_secrets_in_args: true
   require_approval: ["shell_*"]
 ```
 
@@ -145,54 +139,56 @@ policy:
 | --- | --- |
 | `steiner init` | Write a starter `steiner.yaml`. |
 | `steiner run [--stdio] [--verbose]` | Run the gateway. |
-| `steiner keygen --name <principal>` | Issue an API key for a principal. |
-| `steiner audit [--principal --decision --tool --limit --json]` | Query the audit log; `--json` emits JSONL for a SIEM. |
-| `steiner approvals list \| approve <id> \| deny <id>` | Resolve human-in-the-loop approvals. |
-| `steiner policy test <file>` | Run attack-scenario fixtures against your policy. |
+| `steiner keygen --name <principal>` | Issue an API key. |
+| `steiner audit [--json]` | Query the audit log. |
+| `steiner approvals list \| approve <id> \| deny <id>` | Resolve pending approvals. |
+| `steiner policy test <file>` | Run attack-scenario fixtures. |
+| `steiner version` | Print version. |
 
-## Prove the containment claim
+## Containment eval
 
-The repo ships a ten-scenario containment eval:
+Ten scripted scenarios ship with the repo:
 
 ```bash
 steiner policy test examples/attacks/scenarios.yaml
 ```
 
-Each scenario is a sequence of tool calls asserting the gateway's decision.
-They cover the trifecta, DLP over outbound arguments, approval gating, and —
-importantly — that ordinary read-only work is never impeded. See
-[examples/attacks/scenarios.yaml](examples/attacks/scenarios.yaml).
+See [examples/attacks/scenarios.yaml](examples/attacks/scenarios.yaml) and
+[examples/demo/injection-attack.md](examples/demo/injection-attack.md).
 
 ## Enforcement pipeline
-
-Every tool call runs through:
 
 ```
 allowlist -> rate limit -> policy (taint / DLP / approval) -> forward -> audit
 ```
 
-A blocked call is returned to the model as a **tool error with the reason**,
-not a protocol error, so the model can read why and explain it to the user
-instead of blindly retrying.
+Blocked calls return a **tool error with the reason** so the model can explain the
+denial instead of retrying blindly. Taint is session-scoped and independent of
+MCP protocol sessions (see [docs/spec-compat.md](docs/spec-compat.md)).
 
-Taint is **session-scoped**. Steiner mints its own session identity, so taint
-state never depends on protocol-level sessions — which matters because the
-2026-07-28 MCP revision removes them (see
-[docs/spec-compat.md](docs/spec-compat.md)).
+## Documentation
 
-## Status and limitations
+| Document | Description |
+| --- | --- |
+| [CHANGELOG.md](CHANGELOG.md) | Release history |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Development setup |
+| [SECURITY.md](SECURITY.md) | Vulnerability reporting |
+| [docs/spec-compat.md](docs/spec-compat.md) | MCP spec compatibility |
+| [docs/launch.md](docs/launch.md) | Release and launch checklist |
 
-Steiner is young. Known v1 limitations:
+## Current limitations (v0.1.0)
 
-- Resource reads are audited but not policy-gated (tool calls are the
-  exfiltration surface that matters first).
-- Taint state and rate-limit windows are in-memory per process; running
-  multiple instances means independent state.
-- Upstream credentials are static config values (no OAuth passthrough yet).
-- Detectors are deliberately simple heuristics.
+- Resource reads are audited but not policy-gated.
+- Taint and rate-limit state are in-memory per process.
+- Upstream credentials are static config values (no OAuth passthrough).
+- Detectors are heuristic, not ML-based.
 
-None of these weaken the trifecta guarantee, which is enforced on tool calls
-in a single process.
+The trifecta rule is enforced deterministically on tool calls within a single
+gateway process.
+
+## Author
+
+**Huzaifa Thakur** — [GitHub @HT88-exe](https://github.com/HT88-exe)
 
 ## License
 

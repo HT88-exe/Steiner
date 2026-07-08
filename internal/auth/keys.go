@@ -1,5 +1,5 @@
 // Package auth implements API-key authentication for the HTTP ingress.
-// Keys are random bearer tokens of the form "sk-steiner-<hex>". 
+// Keys are random bearer tokens of the form "sk-steiner-<hex>".
 // Only their SHA-256 digests are stored, in a YAML keys file managed by `steiner keygen`.
 package auth
 

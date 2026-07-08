@@ -28,7 +28,7 @@ type Config struct {
 	AuditDB string `yaml:"audit_db"`
 	// Instructions is advertised to connecting MCP clients.
 	Instructions string `yaml:"instructions"`
-	// DefaultPrincipal names the principal used for stdio ingress, where there is no HTTP authentication. 
+	// DefaultPrincipal names the principal used for stdio ingress, where there is no HTTP authentication.
 	// Defaults to "local".
 	DefaultPrincipal string `yaml:"default_principal"`
 	// SessionTimeoutMinutes closes idle downstream sessions. Default 30.
@@ -61,7 +61,7 @@ type Upstream struct {
 	Args    []string          `yaml:"args"`
 	Env     map[string]string `yaml:"env"`
 
-	// HTTP transport fields. 
+	// HTTP transport fields.
 	// Headers lets the gateway hold upstream credentials so agents never see them.
 	URL     string            `yaml:"url"`
 	Headers map[string]string `yaml:"headers"`
